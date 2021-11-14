@@ -113,6 +113,8 @@ For example, to train the 1-shot 39-way FEAT model with ResNet-12 backbone on ou
     $ python train_fsl.py  --max_epoch 220 --model_class FEAT  --backbone_class Res12 --dataset ScanImage --way 38 --eval_way 39 --shot 1 --eval_shot 1 --query 15 --eval_query 1 --balance 1 --temperature 64 --temperature2 64 --lr 0.0002 --lr_mul 10 --lr_scheduler step --step_size 40 --gamma 0.5 --init_weights ./saves/initialization/scanimage/Res12-pre.pth --eval_interval 1 --use_euclidean --save_dir './saves' --multi_gpu --gpu 0 --iterations 3000 --num_workers 12
 This command can be also be used to test the template matching model just change the eval_way as per number of target template at inference time. Then model will automaticaaly parse the final weight after training. As weight file name and folder is based on train time parameter name.
 
+## Note:
+Since the dataset right now is private, in future if things changes we can release the datset as well.  However, our final training weights are stored  with file name `ScanImage-FEAT-Res12-38w01s15q-Pre-DIS` in [Google drive](https://drive.google.com/drive/folders/16QzI9kJZpIIQ079eYzUy55pAjIRMt-VK?usp=sharing).
 ## Acknowledgment
 Following repo codes, functions and research work were leveraged to develop this work package.
 - [ProtoNet](https://github.com/cyvius96/prototypical-network-pytorch)
