@@ -1,0 +1,5 @@
+Weights are stored in Google drive.
+Download it from-
+https://drive.google.com/drive/folders/16QzI9kJZpIIQ079eYzUy55pAjIRMt-VK?usp=sharing
+
+Go to folder "Initialization/scanimage" and download all weights and place all of them in this folder.
