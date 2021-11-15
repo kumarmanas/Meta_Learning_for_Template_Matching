@@ -1,4 +1,4 @@
-# CNN Bases Meta-Learning for Noisy Image Classification and Template Matching
+# CNN Based Meta-Learning for Noisy Image Classification and Template Matching
 
 ## Introduction
 
