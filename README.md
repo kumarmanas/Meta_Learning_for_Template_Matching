@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This master thesis used a few-shot meta learning approach to solve the problem of open-set template matching. In this thesis, template matching is treated as a classification problem, but having availability of just template as class representative. Work is based on non-parametric approach of meta-learning [Prototypical Network](https://arxiv.org/abs/1703.05175).
+This master thesis used a few-shot meta learning approach to solve the problem of open-set template matching. In this thesis, template matching is treated as a classification problem, but having availability of just template as class representative. Work is based on non-parametric approach of meta-learning [Prototypical Network](https://arxiv.org/abs/1703.05175) and [FEAT](https://github.com/Sha-Lab/FEAT).
 
 ## Installation
 
