@@ -19,10 +19,11 @@ def one_hot(indices, depth):
 
     encoded_indicies = torch.zeros(indices.size() + torch.Size([depth]))
     if indices.is_cuda:
+        print('running index over CUDA')
         encoded_indicies = encoded_indicies.cuda()    
     index = indices.view(indices.size()+torch.Size([1]))
     encoded_indicies = encoded_indicies.scatter_(1,index,1)
-
+    print('encoded indices is:',encoded_indicies)
     return encoded_indicies
 
 def set_gpu(x):
@@ -66,6 +67,7 @@ class Averager():
 
 def count_acc(logits, label):
     pred = torch.argmax(logits, dim=1)
+    #print('pred is:',pred)
     if torch.cuda.is_available():
         return (pred == label).type(torch.cuda.FloatTensor).mean().item()
     else:
@@ -124,6 +126,8 @@ def postprocess_args(args):
         save_path1 += '-Pre'
     if args.use_euclidean:
         save_path1 += '-DIS'
+    elif args.use_euclideanWithCosine:
+        save_path1 += '-DISPLUSSIM'
     else:
         save_path1 += '-SIM'
             
@@ -139,46 +143,52 @@ def postprocess_args(args):
 
 def get_command_line_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--max_epoch', type=int, default=200)
+    parser.add_argument('--max_epoch', type=int, default=2)
     parser.add_argument('--episodes_per_epoch', type=int, default=100)
-    parser.add_argument('--num_eval_episodes', type=int, default=600)
+    parser.add_argument('--num_eval_episodes', type=int, default=200)
     parser.add_argument('--model_class', type=str, default='FEAT', 
-                        choices=['MatchNet', 'ProtoNet', 'BILSTM', 'DeepSet', 'GCN', 'FEAT', 'FEATSTAR', 'SemiFEAT', 'SemiProtoFEAT']) # None for MatchNet or ProtoNet
-    parser.add_argument('--use_euclidean', action='store_true', default=False)    
-    parser.add_argument('--backbone_class', type=str, default='ConvNet',
-                        choices=['ConvNet', 'Res12', 'Res18', 'WRN'])
-    parser.add_argument('--dataset', type=str, default='MiniImageNet',
-                        choices=['MiniImageNet', 'TieredImageNet', 'CUB'])
+                        choices=['ProtoNet', 'FEAT']) # None for ProtoNet
+    parser.add_argument('--use_euclidean', action='store_true', default=True)
+    #parser.add_argument('--use_euclideanWithCosine', action='store_true', default=True)
+    parser.add_argument('--backbone_class', type=str, default='Res12',
+                        choices=['ConvNet', 'Res12', 'Res18','Res50'])
+    parser.add_argument('--dataset', type=str, default='ScanImage',
+                        choices=['ScanImage'])
     
     parser.add_argument('--way', type=int, default=5)
     parser.add_argument('--eval_way', type=int, default=5)
     parser.add_argument('--shot', type=int, default=1)
     parser.add_argument('--eval_shot', type=int, default=1)
-    parser.add_argument('--query', type=int, default=15)
-    parser.add_argument('--eval_query', type=int, default=15)
+    parser.add_argument('--query', type=int, default=5)
+    parser.add_argument('--eval_query', type=int, default=5)
     parser.add_argument('--balance', type=float, default=0)
-    parser.add_argument('--temperature', type=float, default=1)
-    parser.add_argument('--temperature2', type=float, default=1)  # the temperature in the  
+    parser.add_argument('--temperature', type=float, default=64)
+    parser.add_argument('--temperature2', type=float, default=64)  # the temperature can be fine tunes, lower means faster convergence but less accurate
      
     # optimization parameters
     parser.add_argument('--orig_imsize', type=int, default=-1) # -1 for no cache, and -2 for no resize, only for MiniImageNet and CUB
-    parser.add_argument('--lr', type=float, default=0.0001)
+    parser.add_argument('--lr', type=float, default=0.0002)
     parser.add_argument('--lr_mul', type=float, default=10)    
     parser.add_argument('--lr_scheduler', type=str, default='step', choices=['multistep', 'step', 'cosine'])
-    parser.add_argument('--step_size', type=str, default='20')
-    parser.add_argument('--gamma', type=float, default=0.2)    
-    parser.add_argument('--fix_BN', action='store_true', default=False)     # means we do not update the running mean/var in BN, not to freeze BN
+    parser.add_argument('--step_size', type=str, default='40')
+    parser.add_argument('--gamma', type=float, default=0.5)    
+    parser.add_argument('--fix_BN', action='store_true', default=False) # means we do not update the running mean/var in BN, not to freeze BN
     parser.add_argument('--augment',   action='store_true', default=False)
-    parser.add_argument('--multi_gpu', action='store_true', default=False)
-    parser.add_argument('--gpu', default='0')
-    parser.add_argument('--init_weights', type=str, default=None)
+    parser.add_argument('--multi_gpu', action='store_true', default=True)
+    parser.add_argument('--gpu', default='0,1,2')
+    #initilization weights act as prior and leverage transfer learninghttps
+    #stored here https://drive.google.com/drive/folders/16QzI9kJZpIIQ079eYzUy55pAjIRMt-VK?usp=sharing
+    parser.add_argument('--init_weights', type=str, default='/saves/initialization/scanimage/Res12-pre.pth')
     
     # usually untouched parameters
     parser.add_argument('--mom', type=float, default=0.9)
-    parser.add_argument('--weight_decay', type=float, default=0.0005) # we find this weight decay value works the best
+    parser.add_argument('--weight_decay', type=float, default=0.0005)
     parser.add_argument('--num_workers', type=int, default=4)
     parser.add_argument('--log_interval', type=int, default=50)
     parser.add_argument('--eval_interval', type=int, default=1)
     parser.add_argument('--save_dir', type=str, default='./checkpoints')
-    
+
+    #for running inference for demonstration
+    parser.add_argument('--iterations', type=int, default=100)
+
     return parser
